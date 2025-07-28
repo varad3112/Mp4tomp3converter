@@ -1,182 +1,60 @@
- MP4 to MP3 Microservices Converter
-Welcome to the MP4 to MP3 Microservices Converter!
-This project provides a robust, scalable solution for converting .mp4 video files to .mp3 audio files using a microservices architecture orchestrated with Docker.
+# 🎵 MP4 to MP3 Microservices Converter
 
-✨ Features
-Microservices Architecture: Decoupled services for improved scalability, maintainability, and fault tolerance.
+Welcome to the **MP4 to MP3 Microservices Converter!**  
+This project offers a robust, scalable solution for converting `.mp4` video files into `.mp3` audio files using a modern **microservices architecture** orchestrated with **Docker**.
 
-Fully Dockerized: Consistent environments and hassle-free deployment with Docker and Docker Compose.
+---
 
-Asynchronous Processing: Message queue ensures non-blocking, reliable conversion tasks.
+## ✨ Features
 
-Scalable Design: Scale individual services independently based on workload.
+✅ **Microservices Architecture** — Decoupled services for better scalability, maintainability, and fault tolerance  
+✅ **Dockerized** — Consistent environments & easy deployment with Docker & Docker Compose  
+✅ **Asynchronous Processing** — Message queue for reliable, non-blocking conversions  
+✅ **Scalable** — Scale services independently based on workload  
+✅ **RESTful API** — Simple endpoints for uploading videos & retrieving converted audio
 
-RESTful API: Simple, clean endpoints for uploading videos and retrieving converted files.
+---
 
-🚀 Architecture Overview
-This converter uses independent microservices that communicate via a message broker for reliable task distribution.
+## 🚀 Architecture Overview
 
-mermaid
-Copy
-Edit
-graph TD
-    A[Client] --> B[API Gateway]
-    B --> C[Message Queue (RabbitMQ)]
-    C --> D[Conversion Worker]
-    D --> E[Storage Service]
-    E --> F[API Gateway]
-    F --> G[Client]
+The system uses independent microservices communicating through a **message queue** for robust and reliable task handling.
 
-    subgraph Services
-        B
-        D
-        E
-    end
-Services Overview:
 
-API Gateway (Flask/FastAPI):
+**Components:**
 
-Exposes REST API endpoints.
+- **API Gateway (Flask/FastAPI)**  
+  Handles file uploads, job submissions, and status checks.
 
-Accepts .mp4 uploads, submits jobs to the queue, and serves converted files.
+- **Message Queue (RabbitMQ)**  
+  Central hub for distributing conversion tasks.
 
-Message Queue (RabbitMQ):
+- **Conversion Worker (Python + FFmpeg)**  
+  Pulls tasks from the queue, converts `.mp4` to `.mp3`, stores the result.
 
-Manages communication between services.
+- **Storage Service (Local/Cloud)**  
+  Manages storage & retrieval of files (can integrate with S3, GCS, etc.).
 
-Guarantees reliable delivery of conversion tasks.
+---
 
-Conversion Worker (Python + FFmpeg):
+## 🛠️ Tech Stack
 
-Processes jobs from the queue.
+- **Docker & Docker Compose** — Container orchestration
+- **Python** — Core language (Flask, FastAPI)
+- **RabbitMQ** — Message broker
+- **FFmpeg** — Media conversion
 
-Converts .mp4 to .mp3 using FFmpeg.
+---
 
-Saves results to storage.
+## 🚦 Getting Started
 
-Storage Service (Local or Cloud):
+### ✅ Prerequisites
 
-Manages file storage and retrieval.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (includes Docker Engine & Docker Compose)
 
-Can be a simple Flask app or integrated with AWS S3, GCS, etc.
+---
 
-🛠️ Tech Stack
-Docker & Docker Compose — Container orchestration.
+### 📂 Clone the Repository
 
-Python — Primary language (Flask, FastAPI).
-
-RabbitMQ — Message broker.
-
-FFmpeg — Media conversion tool.
-
-🏁 Getting Started
-✅ Prerequisites
-Docker Desktop — Install Docker Desktop
-
-📂 Clone the Repository
-bash
-Copy
-Edit
+```bash
 git clone https://github.com/your-username/mp4-to-mp3-converter.git
 cd mp4-to-mp3-converter
-▶️ Run the Application
-Start all services with:
-
-bash
-Copy
-Edit
-docker-compose up --build
-This will:
-
-Build Docker images for each service.
-
-Spin up containers for RabbitMQ, API Gateway, Worker, and Storage.
-
-Stream logs from all services to your terminal.
-
-💡 How to Use
-1️⃣ Upload an MP4 File
-Send a POST request to /convert with your .mp4 file.
-
-Example (with curl):
-
-bash
-Copy
-Edit
-curl -X POST -F "file=@/path/to/video.mp4" http://localhost:5000/convert
-Response:
-
-json
-Copy
-Edit
-{
-  "job_id": "your-job-id",
-  "status": "queued",
-  "message": "Conversion job submitted successfully."
-}
-2️⃣ Check Job Status
-Check the status of a conversion:
-
-bash
-Copy
-Edit
-curl http://localhost:5000/status/your-job-id
-Possible responses:
-
-json
-Copy
-Edit
-// Still processing:
-{
-  "job_id": "your-job-id",
-  "status": "processing",
-  "message": "Conversion in progress."
-}
-
-// Completed:
-{
-  "job_id": "your-job-id",
-  "status": "completed",
-  "message": "Conversion completed.",
-  "download_url": "http://localhost:5000/download/your-job-id.mp3"
-}
-
-// Failed:
-{
-  "job_id": "your-job-id",
-  "status": "failed",
-  "message": "Conversion failed. See logs for details."
-}
-
-// Not found:
-{
-  "job_id": "your-job-id",
-  "status": "not_found",
-  "message": "Job not found."
-}
-3️⃣ Download the Converted MP3
-Once completed, download the .mp3 using the download_url:
-
-bash
-Copy
-Edit
-curl -O http://localhost:5000/download/your-job-id.mp3
-📁 Project Structure
-plaintext
-Copy
-Edit
-.
-├── api-gateway/
-│   ├── app.py            # REST API (Flask/FastAPI)
-│   ├── Dockerfile
-│   └── requirements.txt
-├── conversion-worker/
-│   ├── worker.py         # Conversion logic (FFmpeg)
-│   ├── Dockerfile
-│   └── requirements.txt
-├── storage-service/
-│   ├── app.py            # File server or cloud storage interface
-│   ├── Dockerfile
-│   └── requirements.txt
-├── docker-compose.yml    # Orchestrates all services
-└── README.md             # Project documentation
