@@ -1,26 +1,30 @@
-MP4 to MP3 Microservices Converter
-Welcome to the MP4 to MP3 Microservices Converter! This project provides a robust and scalable solution for converting video files (.mp4) into audio files (.mp3) using a microservices architecture orchestrated with Docker.
+ MP4 to MP3 Microservices Converter
+Welcome to the MP4 to MP3 Microservices Converter!
+This project provides a robust, scalable solution for converting .mp4 video files to .mp3 audio files using a microservices architecture orchestrated with Docker.
 
 ✨ Features
-Microservices Architecture: Decoupled services for enhanced scalability, maintainability, and fault tolerance.
+Microservices Architecture: Decoupled services for improved scalability, maintainability, and fault tolerance.
 
-Dockerized: Easy deployment and consistent environments across development and production.
+Fully Dockerized: Consistent environments and hassle-free deployment with Docker and Docker Compose.
 
-Asynchronous Processing: Utilizes a message queue for non-blocking conversions, improving user experience and system responsiveness.
+Asynchronous Processing: Message queue ensures non-blocking, reliable conversion tasks.
 
-Scalable: Easily scale individual services based on demand.
+Scalable Design: Scale individual services independently based on workload.
 
-RESTful API: Simple API for submitting conversion requests and retrieving results.
+RESTful API: Simple, clean endpoints for uploading videos and retrieving converted files.
 
 🚀 Architecture Overview
-This converter is built around a set of independent microservices that communicate via a message queue.
+This converter uses independent microservices that communicate via a message broker for reliable task distribution.
 
+mermaid
+Copy
+Edit
 graph TD
-    A[Client] --> B[API Gateway Service]
+    A[Client] --> B[API Gateway]
     B --> C[Message Queue (RabbitMQ)]
-    C --> D[Conversion Worker Service]
-    D --> E[Storage Service (e.g., Local Filesystem/S3)]
-    E --> F[API Gateway Service]
+    C --> D[Conversion Worker]
+    D --> E[Storage Service]
+    E --> F[API Gateway]
     F --> G[Client]
 
     subgraph Services
@@ -28,159 +32,151 @@ graph TD
         D
         E
     end
+Services Overview:
 
-API Gateway Service: (e.g., Flask/FastAPI)
+API Gateway (Flask/FastAPI):
 
-Exposes RESTful endpoints for users to upload .mp4 files and check conversion status.
+Exposes REST API endpoints.
 
-Puts conversion jobs onto the message queue.
-
-Retrieves converted .mp3 files or status from storage/worker.
+Accepts .mp4 uploads, submits jobs to the queue, and serves converted files.
 
 Message Queue (RabbitMQ):
 
-Acts as a central communication hub between services.
+Manages communication between services.
 
-Ensures reliable delivery of conversion tasks.
+Guarantees reliable delivery of conversion tasks.
 
-Conversion Worker Service: (e.g., Python with ffmpeg)
+Conversion Worker (Python + FFmpeg):
 
-Pulls conversion jobs from the message queue.
+Processes jobs from the queue.
 
-Performs the actual mp4 to mp3 conversion using ffmpeg.
+Converts .mp4 to .mp3 using FFmpeg.
 
-Stores the resulting .mp3 file in the Storage Service.
+Saves results to storage.
 
-Storage Service: (e.g., Simple Flask app serving files, or integrate with cloud storage like AWS S3/Google Cloud Storage)
+Storage Service (Local or Cloud):
 
-Manages the storage and retrieval of original .mp4 files and converted .mp3 files.
+Manages file storage and retrieval.
 
-🛠️ Technologies Used
-Docker: Containerization platform.
+Can be a simple Flask app or integrated with AWS S3, GCS, etc.
 
-Docker Compose: Tool for defining and running multi-container Docker applications.
+🛠️ Tech Stack
+Docker & Docker Compose — Container orchestration.
 
-Python: Primary language for microservices (e.g., Flask, FastAPI).
+Python — Primary language (Flask, FastAPI).
 
-RabbitMQ: Message broker for asynchronous communication.
+RabbitMQ — Message broker.
 
-FFmpeg: Command-line tool for handling multimedia data (used by the Conversion Worker).
+FFmpeg — Media conversion tool.
 
 🏁 Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+✅ Prerequisites
+Docker Desktop — Install Docker Desktop
 
-Prerequisites
-Before you begin, ensure you have the following installed:
-
-Docker Desktop: Download Docker Desktop
-
-This includes Docker Engine and Docker Compose.
-
-Cloning the Repository
-First, clone this repository to your local machine:
-
+📂 Clone the Repository
+bash
+Copy
+Edit
 git clone https://github.com/your-username/mp4-to-mp3-converter.git
 cd mp4-to-mp3-converter
+▶️ Run the Application
+Start all services with:
 
-Running the Application
-To start all the microservices using Docker Compose, simply run:
-
+bash
+Copy
+Edit
 docker-compose up --build
+This will:
 
-This command will:
+Build Docker images for each service.
 
-Build the Docker images for each service (API Gateway, Worker, Storage).
+Spin up containers for RabbitMQ, API Gateway, Worker, and Storage.
 
-Create and start the containers for RabbitMQ, API Gateway, Worker, and Storage.
+Stream logs from all services to your terminal.
 
-You should see logs from all services in your terminal.
+💡 How to Use
+1️⃣ Upload an MP4 File
+Send a POST request to /convert with your .mp4 file.
 
-💡 Usage
-Once all services are up and running, you can interact with the API Gateway.
+Example (with curl):
 
-The API Gateway service will typically be accessible at http://localhost:5000 (or whatever port is configured in docker-compose.yml).
+bash
+Copy
+Edit
+curl -X POST -F "file=@/path/to/video.mp4" http://localhost:5000/convert
+Response:
 
-1. Upload an MP4 File for Conversion
-Send a POST request to the /convert endpoint with your .mp4 file.
-
-Example using curl:
-
-curl -X POST -F "file=@/path/to/your/video.mp4" http://localhost:5000/convert
-
-Expected Response (JSON):
-
+json
+Copy
+Edit
 {
-    "job_id": "unique-conversion-job-id",
-    "status": "queued",
-    "message": "Conversion job submitted successfully."
+  "job_id": "your-job-id",
+  "status": "queued",
+  "message": "Conversion job submitted successfully."
+}
+2️⃣ Check Job Status
+Check the status of a conversion:
+
+bash
+Copy
+Edit
+curl http://localhost:5000/status/your-job-id
+Possible responses:
+
+json
+Copy
+Edit
+// Still processing:
+{
+  "job_id": "your-job-id",
+  "status": "processing",
+  "message": "Conversion in progress."
 }
 
-The job_id is crucial for checking the status and downloading the converted file.
-
-2. Check Conversion Status
-To check the status of a conversion job, send a GET request to the /status/<job_id> endpoint.
-
-Example using curl:
-
-curl http://localhost:5000/status/unique-conversion-job-id
-
-Expected Responses:
-
-If still processing:
-
+// Completed:
 {
-    "job_id": "unique-conversion-job-id",
-    "status": "processing",
-    "message": "Conversion is in progress."
+  "job_id": "your-job-id",
+  "status": "completed",
+  "message": "Conversion completed.",
+  "download_url": "http://localhost:5000/download/your-job-id.mp3"
 }
 
-If completed:
-
+// Failed:
 {
-    "job_id": "unique-conversion-job-id",
-    "status": "completed",
-    "message": "Conversion completed successfully.",
-    "download_url": "http://localhost:5000/download/unique-conversion-job-id.mp3"
+  "job_id": "your-job-id",
+  "status": "failed",
+  "message": "Conversion failed. See logs for details."
 }
 
-If failed:
-
+// Not found:
 {
-    "job_id": "unique-conversion-job-id",
-    "status": "failed",
-    "message": "Conversion failed. Please check logs for details."
+  "job_id": "your-job-id",
+  "status": "not_found",
+  "message": "Job not found."
 }
+3️⃣ Download the Converted MP3
+Once completed, download the .mp3 using the download_url:
 
-If job not found:
-
-{
-    "job_id": "unique-conversion-job-id",
-    "status": "not_found",
-    "message": "Conversion job not found."
-}
-
-3. Download the Converted MP3 File
-Once the status is completed, you can download the .mp3 file using the download_url provided in the status response.
-
-Example using curl:
-
-curl -O http://localhost:5000/download/unique-conversion-job-id.mp3
-
-This will download the unique-conversion-job-id.mp3 file to your current directory.
-
+bash
+Copy
+Edit
+curl -O http://localhost:5000/download/your-job-id.mp3
 📁 Project Structure
+plaintext
+Copy
+Edit
 .
 ├── api-gateway/
-│   ├── app.py              # Flask/FastAPI application for API endpoints
-│   ├── Dockerfile          # Dockerfile for API Gateway service
-│   └── requirements.txt    # Python dependencies
+│   ├── app.py            # REST API (Flask/FastAPI)
+│   ├── Dockerfile
+│   └── requirements.txt
 ├── conversion-worker/
-│   ├── worker.py           # Python script for processing conversion jobs
-│   ├── Dockerfile          # Dockerfile for Conversion Worker service
-│   └── requirements.txt    # Python dependencies
+│   ├── worker.py         # Conversion logic (FFmpeg)
+│   ├── Dockerfile
+│   └── requirements.txt
 ├── storage-service/
-│   ├── app.py              # Simple Flask app for file serving (or placeholder for S3 integration)
-│   ├── Dockerfile          # Dockerfile for Storage Service
-│   └── requirements.txt    # Python dependencies
-├── docker-compose.yml      # Defines and links all services
-└── README.md               # This file
+│   ├── app.py            # File server or cloud storage interface
+│   ├── Dockerfile
+│   └── requirements.txt
+├── docker-compose.yml    # Orchestrates all services
+└── README.md             # Project documentation
